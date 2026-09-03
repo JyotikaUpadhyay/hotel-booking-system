@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Booking System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>🏨 Hotel Booking System</h1>
+
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#rooms">Rooms</a>
+            <a href="#booking">Book Room</a>
+            <a href="#view-bookings">View Bookings</a>
+        </nav>
+    </header>
+
+    <section id="home" class="hero">
+        <h2>Find Your Perfect Stay</h2>
+
+        <p>
+            Comfortable rooms, simple booking and a relaxing experience.
+        </p>
+
+        <a href="#rooms" class="btn">
+            Explore Rooms
+        </a>
+    </section>
+
+    <section id="rooms">
+
+        <h2>Available Rooms</h2>
+
+        <p class="section-text">
+            Choose the perfect room for your stay.
+        </p>
+
+        <div id="room-container">
+            <!-- Rooms from MySQL will appear here -->
+        </div>
+
+    </section>
+
+    <section id="booking">
+
+        <h2>Book Your Room</h2>
+
+        <form id="booking-form">
+
+            <input
+                type="text"
+                id="customer-name"
+                placeholder="Full Name"
+                required
+            >
+
+            <input
+                type="email"
+                id="email"
+                placeholder="Email Address"
+                required
+            >
+
+            <input
+                type="tel"
+                id="phone"
+                placeholder="Phone Number"
+                required
+            >
+
+            <select id="room-select" required>
+                <option value="">Select Room</option>
+            </select>
+
+            <label>Check-in Date</label>
+
+            <input
+                type="date"
+                id="check-in"
+                required
+            >
+
+            <label>Check-out Date</label>
+
+            <input
+                type="date"
+                id="check-out"
+                required
+            >
+
+            <input
+                type="number"
+                id="guests"
+                placeholder="Number of Guests"
+                min="1"
+                required
+            >
+
+            <select id="payment-method" required>
+
+                <option value="">
+                    Select Payment Method
+                </option>
+
+                <option value="UPI">
+                    UPI
+                </option>
+
+                <option value="Card">
+                    Card
+                </option>
+
+                <option value="Cash">
+                    Cash
+                </option>
+
+            </select>
+
+            <button type="submit">
+                Book Now
+            </button>
+
+        </form>
+
+        <p id="booking-message"></p>
+
+    </section>
+
+
+    <!-- View Bookings Section -->
+
+    <section id="view-bookings">
+
+        <h2>Booking Details</h2>
+
+        <p class="section-text">
+            View confirmed hotel bookings and payment information.
+        </p>
+
+        <button
+            type="button"
+            id="load-bookings-btn"
+        >
+            View Bookings
+        </button>
+
+        <div id="bookings-container">
+
+            <!-- Booking details from MySQL will appear here -->
+
+        </div>
+
+    </section>
+
+
+    <footer>
+
+        <p>
+            © 2026 Hotel Booking System | DBMS Mini Project
+        </p>
+
+    </footer>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
