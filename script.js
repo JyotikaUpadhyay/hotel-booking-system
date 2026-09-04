@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://hotel-booking-system-aiom.onrender.com';
 
 // -------------------------
 // Load rooms from backend
