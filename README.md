@@ -3,6 +3,10 @@
 A full-stack **Hotel Booking Management System** developed as a DBMS Mini Project.  
 The application allows users to view available rooms, make hotel bookings, select a payment method, and view booking details.
 
+## 🌐 Live Website
+
+🔗 **Live Demo:** https://hotel-booking-system-1-2ubl.onrender.com
+
 ## 📌 Project Overview
 
 The Hotel Booking System provides a simple interface for managing hotel room reservations. It integrates a frontend application with a Node.js/Express backend and a MySQL relational database.
