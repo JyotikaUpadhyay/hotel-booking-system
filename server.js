@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
@@ -8,25 +9,35 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MySQL connection
-const db = mysql.createConnection({
+// MySQL connection pool
+const db = mysql.createPool({
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
+
     ssl: {
         rejectUnauthorized: false
-    }
+    },
+
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0
 });
 
-db.connect((err) => {
+// Test database connection
+db.getConnection((err, connection) => {
     if (err) {
         console.error('Database connection failed:', err);
         return;
     }
 
     console.log('Connected to MySQL Database!');
+    connection.release();
 });
 
 // Test route
@@ -38,6 +49,8 @@ app.get('/', (req, res) => {
 app.get('/rooms', (req, res) => {
     db.query('SELECT * FROM rooms', (err, results) => {
         if (err) {
+            console.error('Rooms query error:', err);
+
             return res.status(500).json({
                 error: err.message
             });
@@ -47,9 +60,8 @@ app.get('/rooms', (req, res) => {
     });
 });
 
-// Get all booking details with customer, room and payment information
+// Get all booking details
 app.get('/booking-details', (req, res) => {
-
     const query = `
         SELECT
             b.booking_id,
@@ -77,6 +89,8 @@ app.get('/booking-details', (req, res) => {
 
     db.query(query, (err, results) => {
         if (err) {
+            console.error('Booking details query error:', err);
+
             return res.status(500).json({
                 error: err.message
             });
@@ -88,7 +102,6 @@ app.get('/booking-details', (req, res) => {
 
 // Create new booking
 app.post('/bookings', (req, res) => {
-
     const {
         full_name,
         email,
@@ -121,8 +134,9 @@ app.post('/bookings', (req, res) => {
         'SELECT * FROM rooms WHERE room_id = ?',
         [room_id],
         (roomErr, roomResults) => {
-
             if (roomErr) {
+                console.error('Room query error:', roomErr);
+
                 return res.status(500).json({
                     error: roomErr.message
                 });
@@ -155,7 +169,7 @@ app.post('/bookings', (req, res) => {
                 });
             }
 
-            // Check for overlapping booking
+            // Check overlapping bookings
             const overlapQuery = `
                 SELECT *
                 FROM bookings
@@ -173,14 +187,18 @@ app.post('/bookings', (req, res) => {
                     check_in_date
                 ],
                 (overlapErr, overlapResults) => {
-
                     if (overlapErr) {
+                        console.error(
+                            'Overlap query error:',
+                            overlapErr
+                        );
+
                         return res.status(500).json({
                             error: overlapErr.message
                         });
                     }
 
-                    // Room already booked for selected dates
+                    // Room already booked
                     if (overlapResults.length > 0) {
                         return res.status(409).json({
                             message:
@@ -196,13 +214,17 @@ app.post('/bookings', (req, res) => {
                     const totalAmount =
                         nights * Number(room.price_per_night);
 
-                    // Check if customer already exists
+                    // Check whether customer already exists
                     db.query(
                         'SELECT * FROM customers WHERE email = ?',
                         [email],
                         (customerErr, customerResults) => {
-
                             if (customerErr) {
+                                console.error(
+                                    'Customer query error:',
+                                    customerErr
+                                );
+
                                 return res.status(500).json({
                                     error: customerErr.message
                                 });
@@ -210,7 +232,6 @@ app.post('/bookings', (req, res) => {
 
                             // Existing customer
                             if (customerResults.length > 0) {
-
                                 createBooking(
                                     customerResults[0].customer_id,
                                     room_id,
@@ -221,13 +242,15 @@ app.post('/bookings', (req, res) => {
                                     payment_method,
                                     res
                                 );
-
                             } else {
-
                                 // Add new customer
                                 const customerQuery = `
                                     INSERT INTO customers
-                                    (full_name, email, phone)
+                                    (
+                                        full_name,
+                                        email,
+                                        phone
+                                    )
                                     VALUES (?, ?, ?)
                                 `;
 
@@ -239,8 +262,12 @@ app.post('/bookings', (req, res) => {
                                         phone
                                     ],
                                     (insertErr, customerResult) => {
-
                                         if (insertErr) {
+                                            console.error(
+                                                'Customer insert error:',
+                                                insertErr
+                                            );
+
                                             return res.status(500).json({
                                                 error: insertErr.message
                                             });
@@ -278,7 +305,6 @@ function createBooking(
     paymentMethod,
     res
 ) {
-
     const bookingQuery = `
         INSERT INTO bookings
         (
@@ -304,8 +330,12 @@ function createBooking(
             totalAmount
         ],
         (bookingErr, bookingResult) => {
-
             if (bookingErr) {
+                console.error(
+                    'Booking insert error:',
+                    bookingErr
+                );
+
                 return res.status(500).json({
                     error: bookingErr.message
                 });
@@ -334,8 +364,12 @@ function createBooking(
                     paymentMethod
                 ],
                 (paymentErr, paymentResult) => {
-
                     if (paymentErr) {
+                        console.error(
+                            'Payment insert error:',
+                            paymentErr
+                        );
+
                         return res.status(500).json({
                             error: paymentErr.message
                         });
